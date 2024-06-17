@@ -1,0 +1,14 @@
+{
+  "name": "backendagain",
+  "version": "1.0.0",
+  "description": "practicing and learning backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "suchana",
+  "license": "ISC"
+}
