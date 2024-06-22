@@ -12,7 +12,7 @@ const registerUser = asyncHandler(async (req, res) => {
             message: "All fields are required"
         })
     }
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
     if (existedUser) {
@@ -22,7 +22,12 @@ const registerUser = asyncHandler(async (req, res) => {
         })
     }
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverimageLocalPath = req.files?.coverimage[0]?.path;
+    //const coverimageLocalPath = req.files?.coverimage[0]?.path;
+
+   let coverimageLocalPath;
+    if(req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0) {
+        coverimageLocalPath = req.files.coverimage[0].path;
+    }
     if(!avatarLocalPath){
         res.status(400).json({
             success: false,

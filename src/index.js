@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config({
     path: "./env"
 });
-/*
+
 connectDB()
 .then(()=>{
     app.listen(process.env.PORT,()=>{
@@ -16,10 +16,10 @@ connectDB()
     console.log("database connection failed: " + err);
 })
 
-*/
-app.listen(process.env.PORT,(req,res)=>{
-    console.log(`app is listening on port ${process.env.PORT}`);
-})
+
+// app.listen(process.env.PORT,(req,res)=>{
+//     console.log(`app is listening on port ${process.env.PORT}`);
+// })
 /*
 (async()=>{
     try{
