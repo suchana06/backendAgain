@@ -254,38 +254,96 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             foreignField: "subscriber",
             as: "subscribedTo"
         }
-    },{
-        $addFields:{
-            subscribersCount:{
-                $size:"$subscribers"
+    }, {
+        $addFields: {
+            subscribersCount: {
+                $size: "$subscribers"
             },
-            channelsSubcribedTo:{
-                $size:"$subscribedTo"
+            channelsSubcribedTo: {
+                $size: "$subscribedTo"
             },
-            isSubscribedTo:{
-                $cond:{
-                    if:{$in: [req.user?._id, "$subscribers.Subscriber"]},
-                    then:true,
-                    else:false
+            isSubscribedTo: {
+                $cond: {
+                    if: { $in: [req.user?._id, "$subscribers.Subscriber"] },
+                    then: true,
+                    else: false
                 }
             }
         }
-    },{
-        $project:{
-            email:1,
-            username:1,
-            fullname:1,
-            avatar:1,
-            cover:1,
-            subscribersCount:1,
-            channelsSubcribedTo:1,
-            isSubscribedTo:1
+    }, {
+        $project: {
+            email: 1,
+            username: 1,
+            fullname: 1,
+            avatar: 1,
+            cover: 1,
+            subscribersCount: 1,
+            channelsSubcribedTo: 1,
+            isSubscribedTo: 1
         }
     }])
-    if(!channel?.length){
+    if (!channel?.length) {
         throw new ApiError(404, "channel not found")
     }
     return res.status(200)
-    .json(new ApiResponse(200,channel[0],"channel fetched successfully"))
+        .json(new ApiResponse(200, channel[0], "channel fetched successfully"))
 });
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateAvatar, updateCover,getUserChannelProfile };
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(re.user?._id)
+            },
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullname: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                },
+                                {
+                                    $addFields: {
+                                        owner: {
+                                            $first: "$owner"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+    return res.status(200)
+        .json(
+            new ApiResponse(200, user[0].watchHistory, "watch histry fetched successfully")
+        )
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateAvatar,
+    updateCover,
+    getUserChannelProfile,
+    getWatchHistory
+};
