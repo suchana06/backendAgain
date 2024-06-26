@@ -4,6 +4,7 @@ import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -289,11 +290,18 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, channel[0], "channel fetched successfully"))
 });
 const getWatchHistory = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    
+    if (!userId) {
+        throw new ApiError(400, "User ID is missing");
+    }
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(re.user?._id)
-            },
+                _id: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
             $lookup: {
                 from: "videos",
                 localField: "watchHistory",
@@ -305,23 +313,23 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                             from: "users",
                             localField: "owner",
                             foreignField: "_id",
-                            as: "owner",
-                            pipeline: [
-                                {
-                                    $project: {
-                                        fullname: 1,
-                                        username: 1,
-                                        avatar: 1
-                                    }
-                                },
-                                {
-                                    $addFields: {
-                                        owner: {
-                                            $first: "$owner"
-                                        }
-                                    }
-                                }
-                            ]
+                            as: "owner"
+                        },
+                    },
+                    {
+                        $unwind: "$owner"
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            title: 1,
+                            description: 1,
+                            owner: {
+                                _id: "$owner._id",
+                                fullname: "$owner.fullname",
+                                username: "$owner.username",
+                                avatar: "$owner.avatar"
+                            }
                         }
                     }
                 ]
