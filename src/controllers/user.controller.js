@@ -38,6 +38,9 @@ const registerUser = asyncHandler(async (req, res) => {
     if (req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0) {
         coverimageLocalPath = req.files.coverimage[0].path;
     }
+    if(!coverimageLocalPath){
+        throw new ApiError(401,"cover image not found")
+    }
     if (!avatarLocalPath) {
         throw new ApiError(400, "Missing avatar")
     }
