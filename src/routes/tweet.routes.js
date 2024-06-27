@@ -1,0 +1,10 @@
+import {createTweet,updateTweet,deleteTweet,getUserTweets} from '../controllers/tweet.controller.js';
+import { Router } from 'express';
+import {upload} from '../middlewares/multer.middleware.js';
+import {verifyJWT} from '../middlewares/auth.middleware.js';
+const router = Router();
+router.route("/create").post(verifyJWT,createTweet);
+router.route("/t/:tweetId").post(verifyJWT,updateTweet);
+router.route("/t/:tweetId").delete(verifyJWT,deleteTweet);
+router.route("/t/:userId").get(getUserTweets);
+export default router;
